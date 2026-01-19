@@ -12,7 +12,7 @@ def get_conn():
         password=os.environ["DB_PASSWORD"],
         port=1433,
         autocommit=True,
-        tds_version="7.4",
+        tds_version=pytds.TDS74
     )
 
 @app.get("/")
