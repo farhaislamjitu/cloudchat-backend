@@ -65,12 +65,4 @@ jobs:
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_330E0516734C44CC9E0FC2C17A15F90A }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0F4F2782DF174EFA982E9F2E03319EE9 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_76F2ED17DE3940D29C6B28E9F079D262 }}
-
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
-        with:
-          app-name: 'cloudchat-backend-2026'
-          slot-name: 'Production'
-          
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_76F2ED17DE3940D29C6B28E9F079D262 }}        
