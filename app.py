@@ -11,8 +11,8 @@ def get_conn():
         user=os.environ["DB_USER"],
         password=os.environ["DB_PASSWORD"],
         port=1433,
-        encrypt=True,
         autocommit=True,
+        tds_version="7.4",
     )
 
 @app.get("/")
