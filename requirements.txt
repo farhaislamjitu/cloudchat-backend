@@ -1,3 +1,2 @@
 flask
-gunicorn
 python-tds==1.17.1
