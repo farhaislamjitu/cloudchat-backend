@@ -33,7 +33,6 @@ def get_messages():
     """)
     rows = cur.fetchall()
     conn.close()
-
     data = [{"username": r[0], "text": r[1], "createdAt": str(r[2])} for r in rows]
     return jsonify(list(reversed(data)))
 
@@ -49,7 +48,7 @@ def add_message():
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO Messages (Username, MessageText) VALUES (%s, %s)",
+        "INSERT INTO Messages (Username, MessageText) VALUES (?, ?)",
         (username, text)
     )
     conn.commit()
