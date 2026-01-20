@@ -1,21 +1,23 @@
 import os
-import ssl
-from flask import Flask, request, jsonify
+import logging
+
 import pytds
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+app.logger.setLevel(logging.INFO)
 
 def get_conn():
-    tls = ssl.create_default_context()
     return pytds.connect(
         server=os.environ["DB_SERVER"],
         database=os.environ["DB_NAME"],
         user=os.environ["DB_USER"],
         password=os.environ["DB_PASSWORD"],
         port=1433,
-        tds_version="7.4",
         autocommit=True,
-        tls_context=tls,
+        tds_version="7.4",
     )
 
 @app.get("/")
@@ -24,34 +26,45 @@ def health():
 
 @app.get("/api/messages")
 def get_messages():
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT TOP 20 Username, MessageText, CreatedAt
-        FROM Messages
-        ORDER BY CreatedAt DESC
-    """)
-    rows = cur.fetchall()
-    conn.close()
-    data = [{"username": r[0], "text": r[1], "createdAt": str(r[2])} for r in rows]
-    return jsonify(list(reversed(data)))
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT TOP 20 Username, MessageText, CreatedAt
+            FROM Messages
+            ORDER BY CreatedAt DESC
+        """)
+        rows = cur.fetchall()
+        conn.close()
+
+        data = [{"username": r[0], "text": r[1], "createdAt": str(r[2])} for r in rows]
+        return jsonify(list(reversed(data)))
+
+    except Exception as e:
+        app.logger.exception("ERROR in /api/messages")
+        return jsonify({"error": str(e)}), 500
 
 @app.post("/api/messages")
 def add_message():
-    body = request.get_json(force=True)
-    username = body.get("username", "").strip()
-    text = body.get("text", "").strip()
+    try:
+        body = request.get_json(force=True)
+        username = (body.get("username") or "").strip()
+        text = (body.get("text") or "").strip()
 
-    if not username or not text:
-        return jsonify({"error": "username and text are required"}), 400
+        if not username or not text:
+            return jsonify({"error": "username and text are required"}), 400
 
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO Messages (Username, MessageText) VALUES (?, ?)",
-        (username, text)
-    )
-    conn.commit()
-    conn.close()
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO Messages (Username, MessageText) VALUES (?, ?)",
+            (username, text)
+        )
+        conn.commit()
+        conn.close()
 
-    return jsonify({"status": "saved"}), 201
+        return jsonify({"status": "saved"}), 201
+
+    except Exception as e:
+        app.logger.exception("ERROR in /api/messages POST")
+        return jsonify({"error": str(e)}), 500
