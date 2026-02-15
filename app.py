@@ -5,7 +5,6 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-# Allow ONLY your static website to call /api/*
 CORS(app, resources={r"/api/*": {"origins": ["https://ataurweb2026.z29.web.core.windows.net"]}})
 
 def get_conn():
@@ -64,3 +63,7 @@ def post_message():
         conn.commit()
 
     return jsonify({"ok": True}), 201
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
