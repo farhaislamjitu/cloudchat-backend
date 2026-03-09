@@ -3,10 +3,13 @@ import pyodbc
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+# Initialize Flask app
 app = Flask(__name__)
 
+# Enable CORS for frontend hosted in Azure Storage
 CORS(app, resources={r"/api/*": {"origins": ["https://ataurweb2026.z29.web.core.windows.net"]}})
 
+# Database connection
 def get_conn():
     server = os.environ["DB_SERVER"]
     db = os.environ["DB_NAME"]
@@ -25,10 +28,12 @@ def get_conn():
     )
     return pyodbc.connect(conn_str)
 
+# Health check route
 @app.get("/")
 def health():
     return "Backend running OK"
 
+# Fetch latest 20 messages
 @app.get("/api/messages")
 def get_messages():
     with get_conn() as conn:
@@ -45,6 +50,7 @@ def get_messages():
         for r in rows
     ])
 
+# Post a new message
 @app.post("/api/messages")
 def post_message():
     payload = request.get_json(force=True) or {}
@@ -64,6 +70,7 @@ def post_message():
 
     return jsonify({"ok": True}), 201
 
+# Run Flask app on all interfaces (VM + Load Balancer)
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 5000))  # Default 5000 if PORT not set
     app.run(host="0.0.0.0", port=port)
