@@ -36,19 +36,26 @@ def health():
 # Fetch latest 20 messages
 @app.get("/api/messages")
 def get_messages():
-    with get_conn() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT TOP 20 Username, MessageText, CreatedAt
-            FROM dbo.Messages
-            ORDER BY CreatedAt DESC
-        """)
-        rows = cur.fetchall()
+    try:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT TOP 20 Username, MessageText, CreatedAt
+                FROM dbo.Messages
+                ORDER BY CreatedAt DESC
+            """)
+            rows = cur.fetchall()
 
-    return jsonify([
-        {"username": r[0], "text": r[1], "createdAt": r[2].isoformat()}
-        for r in rows
-    ])
+        return jsonify([
+            {
+                "username": r[0],
+                "text": r[1],
+                "createdAt": r[2].isoformat() if r[2] else None
+            }
+            for r in rows
+        ])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Post a new message
 @app.post("/api/messages")
@@ -72,5 +79,5 @@ def post_message():
 
 # Run Flask app on all interfaces (VM + Load Balancer)
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Default 5000 if PORT not set
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
