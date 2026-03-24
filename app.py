@@ -15,7 +15,7 @@ def get_conn():
     password = os.environ.get("DB_PASSWORD")
 
     conn_str = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+        f"DRIVER={{ODBC Driver 18 for SQL Server}};"
         f"SERVER={server};"
         f"DATABASE={database};"
         f"UID={username};"
